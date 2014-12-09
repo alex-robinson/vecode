@@ -13,7 +13,7 @@ program test_vecode
 
     integer :: i, n, k
 
-    tann  = 290.0 
+    tann  = 23.0 
     pann  = 1000.0 
     pann5 = 1000.0 
     gdd   = 2000.0 
@@ -30,19 +30,16 @@ program test_vecode
     do i = 1, n
         read(10,*) frac 
 
-        tann  =   0.0 + (50.0-0.0)*frac(1)
-!         tann  = 230.0 + (310.0-230.0)*frac(1)
+        tann  =   -50.0 + (50.0+50.0)*frac(1)
         pann  =   0.0 + (4000.0-0.0) *frac(2)
-        pann5 =   0.0 + ( 800.0-0.0) *frac(3)
+!         pann5 =   0.0 + ( 800.0-0.0) *frac(3)
+        pann5 = pann 
         gdd   =   0.0 + (5000.0-0.0) *frac(4)
 !         pco2  = 200.0 + (560.0-200.0)*frac(5)
 
         call tvm(tann,pann,pann5,gdd,pco2, &
                  forest,grass,desert,needles,carbon_uptake)
-        do k = 1, 20
-        call tvm(tann,pann,pann5,gdd,pco2, &
-                 forest,grass,desert,needles,carbon_uptake)
-        end do 
+
         write(*,"(1x,10f10.2)") tann, pann, pann5, gdd, pco2, &
                                 forest, grass, desert, needles, 0.0
 

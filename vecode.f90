@@ -85,6 +85,7 @@ contains
 
         real(sp), intent(IN)    :: tann, pann, pann5, gdd, pco2
         real(sp), intent(INOUT) :: forest,grass,desert,needles,carbon_uptake
+        integer :: k 
 
         !      TERRESTRIAL VEGETATION ANNUAL MODEL
 
@@ -114,20 +115,33 @@ contains
         gdd0     = gdd
         co2      = pco2
 
-        if (ini_step == 0) then
-            call init_tvm
-            CALL ccstat
-            CALL ccstat_isotope
-        else
-            CALL ccdyn
-            if (ktvm == 1) then
-                do kprom=1,19
-                    CALL ccdyn
-                end do
-            end if
-        end if
+!         if (ini_step == 0) then
+!             call init_tvm
+!             call ccstat
+!             call ccstat_isotope
+!         else
+!             call ccdyn
+!             if (ktvm == 1) then
+!                 do kprom=1,19
+!                     call ccdyn
+!                 end do
+!             end if
+!         end if
+
+!         ini_step=1
+
+        ini_step = 0 
+        call init_tvm
+        call ccstat
+        call ccstat_isotope
 
         ini_step=1
+        do k = 1, 20 
+            call ccdyn
+            do kprom=1,19
+                call ccdyn
+            end do
+        end do 
 
         forest  = st 
         grass   = sg 
@@ -145,7 +159,7 @@ contains
 
         !...1) calculation of initial carbon cycle parameters
 
-        CALL ccparam
+        call ccparam
 
         ! calculation of equilibrium storages
 
@@ -178,7 +192,7 @@ contains
         snlt=nlshare_st
         sg=1.0-st-sd
 
-        CALL climpar
+        call climpar
 
         return
 
@@ -238,7 +252,7 @@ contains
 
         ! calculation of current carbon cycle parameters
 
-        CALL ccparam
+        call ccparam
 
         ! calculation of fraction dynamic variables
 
@@ -430,7 +444,7 @@ contains
         b3g14=b3g14*(1-c14tdec)
         b4g14=b4g14*(1-c14tdec)
 
-        CALL climpar
+        call climpar
 
         return
 
