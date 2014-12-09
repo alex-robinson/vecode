@@ -134,13 +134,10 @@ contains
         call init_tvm
         call ccstat
         call ccstat_isotope
-
         ini_step=1
-        do k = 1, 20 
-            call ccdyn
-            do kprom=1,19
-                call ccdyn
-            end do
+        
+        do kprom = 1, 40
+            call ccdyn 
         end do 
 
         forest  = st 
@@ -263,12 +260,12 @@ contains
         temp_st=st
         temp_sg=sg
 
-        ! calculation of forest dynamics; exponential filtre
+        ! calculation of forest dynamics; exponential filter
         dst=forshare_st-fd*exp(-1./t2t)-st
         st=st+dst
         snlt=nlshare_st-nld*exp(-1./t2t)
 
-        ! desert dynamics; exponential filtre
+        ! desert dynamics; exponential filter
         dsd=desshare_st-dd*exp(-1./t2g)-sd
         tempor1=sd+dsd+st
 
