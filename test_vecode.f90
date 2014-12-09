@@ -7,10 +7,6 @@ program test_vecode
 
     implicit none
 
-
-    INFLDR = "orig/"
-
-
     call init_tvm
 
     call tvm 
