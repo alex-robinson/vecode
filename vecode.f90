@@ -12,13 +12,12 @@ module vecode
         nstat, b12,   b34,  &
         b1,    b2,    b3,    b4,  &
         bc14,    bc13, anup13
-    real(sp) :: carea, carea_glac
 
     integer :: maskb
     real(sp) :: tatb, prcb, prcb5, gdd0b
     real(sp) :: tatmsmin, tatmsmax
     real(sp) :: gdd0, gdd0_min, gdd0_max,co2, pab
-    integer :: ini_step, klsr, ktvm, kprom
+    integer :: ini_step, ktvm, kprom
 
     real(sp) :: &
     a,bet,gamm,fmax,avecube,tmin,npp,nppmax,v1,v2,v3,  &
@@ -62,48 +61,30 @@ contains
 
         implicit none 
 
-        integer :: i, n  
-
-
         !...1) Initial distribution of vegetation
 
-        if (KLSR.eq.0) then
+        st   = 0.0
+        sg   = 0.0
+        sd   = 0.0
+        blai = 0.0
+        
+        ktvm = 1   ! vegetation model   | OFF | STATIC  | DYNAMIC  | DYN+CC
 
-            st   = 0.0
-            sg   = 0.0
-            sd   = 0.0
-            blai = 0.0
-
-        endif
-      
         !...3) Initialisation of  TVM parameters
 
         call INITCPAR
-
-!         !     getting correct land area     
-!         open (555,file=trim(INFLDR)//'GEO/landarea.dat')
-!         do i=1,IT
-!             read(555,*) (carea(i,n),n=1,NS)
-!         enddo
-!         close (555)
-        carea = 2.0 
-
-!         !     getting correct glacial land area
-!         open (555,file=trim(INFLDR)//'GEO/landarea_glac.dat')
-!         do i=1,IT
-!             read(555,*) (carea_glac(i,n),n=1,NS)
-! !             print *,(carea_glac(i,n),n=1,NS)
-!         enddo
-!         close (555)
-        carea_glac = 1.2 
 
         return 
 
     end subroutine init_tvm 
 
-    subroutine tvm
+    subroutine tvm(tann,pann,pann5,gdd,pco2, &
+                   forest,grass,desert,needles,carbon_uptake)
 
         implicit none 
+
+        real(sp), intent(IN)    :: tann, pann, pann5, gdd, pco2
+        real(sp), intent(INOUT) :: forest,grass,desert,needles,carbon_uptake
 
         !      TERRESTRIAL VEGETATION ANNUAL MODEL
 
@@ -114,68 +95,45 @@ contains
         !  Modifyed by: A.Ganopolski
         !  Last modification: 17.11.97
 
-
         ! input data: annual mean temperature in degr. Celc. - ave_t
         !             annual mean precipitation, mm/year - ave_pr
         !             growing degree days above 0, degr. Celc - gdd0
         !             CO2 concentration in the atmosphere, ppm - co2
 
-        ! output data: st(i,j) - forest's share in cell i,j
-        !              sg(i,j) - grass share in cell i,j
-        !              sd(i,j) - desert's share in cell i,j
-        !              snlt(i,j) -needle leaved trees ratio
-        !              st(i,j)+sg(i,j)+sd(i,j)=1, 0<= snlt(i,j)<= 1
-        !              plai(i,j) - annual average of leaf area index, m2/m2
-        !              anup(i,j) - annual uptake of carbon in cell, Gt -> kg/m2 ???
+        ! output data: st - forest's share in cell
+        !              sg - grass share in cell
+        !              sd - desert's share in cell
+        !              snlt - needle leaved trees ratio
+        !              st+sg+sd=1, 0<= snlt<= 1
+        !              plai - annual average of leaf area index, m2/m2
+        !              anup - annual uptake of carbon in cell, Gt -> kg/m2 ???
 
-        ! COMMON block described in buffer.inc
+        ave_t    = tann
+        ave_pr   = pann
+        ave_pr05 = pann5
+        gdd0     = gdd
+        co2      = pco2
 
-
-        !...    SPATIAL LOOP
-
-        integer :: k, i 
-
-            if (maskb == 1) then
-              
-              ave_t= tatb
-              ave_pr=prcb
-              ave_pr05=prcb5
-              gdd0=gdd0b
-        ! co2 enrichment
-              co2=pab
-!               lat=i
-!               lon=k
-              
-        !      if (KTVM.eq.1) then
-        !   equilibrium run
-              
-        !... calculation of initial forest ratio and amount of carbon in pools based
-        !       on equilbrium state; carbon uptake equals to steady state amount
-              
-        !          call CCSTAT
-              
-        !                else
-              
-        !... calculation of dynamics of carbon pools and forest ratio
-            
-              if (ini_step == 0 .AND. klsr == 0) then
-                CALL ccstat
-                CALL ccstat_isotope
-              else
-                CALL ccdyn
-                if (ktvm == 1) then
-                  do kprom=1,19
+        if (ini_step == 0) then
+            call init_tvm
+            CALL ccstat
+            CALL ccstat_isotope
+        else
+            CALL ccdyn
+            if (ktvm == 1) then
+                do kprom=1,19
                     CALL ccdyn
-                  end do
-                end if
-              end if
-              
-        !       endif
-              
-              
+                end do
             end if
+        end if
 
         ini_step=1
+
+        forest  = st 
+        grass   = sg 
+        desert  = sd 
+        needles = snlt  
+        carbon_uptake = anup 
 
         return
 
@@ -218,7 +176,7 @@ contains
         st=forshare_st
         sd=desshare_st
         snlt=nlshare_st
-        sg=1.-st-sd
+        sg=1.0-st-sd
 
         CALL climpar
 
