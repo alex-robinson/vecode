@@ -72,6 +72,18 @@ vecode: $(objdir)/ncio.o $(objdir)/vecode.o
 	@echo "    test_vecode.x is ready."
 	@echo " "
 
+vecode-rembo: $(objdir)/ncio.o $(objdir)/vecode.o
+	$(FC) $(DFLAGS) $(FLAGS) -o rembo_vecode.x $^ rembo_vecode.f90 $(LFLAGS)
+	@echo " "
+	@echo "    rembo_vecode.x is ready."
+	@echo " "
+
+vecode-rembo-ens: $(objdir)/ncio.o $(objdir)/vecode.o
+	$(FC) $(DFLAGS) $(FLAGS) -o rembo-ens_vecode.x $^ rembo-ens_vecode.f90 $(LFLAGS)
+	@echo " "
+	@echo "    rembo-ens_vecode.x is ready."
+	@echo " "
+
 clean:
-	rm -f test_vecode.x $(objdir)/*.o $(objdir)/*.mod
+	rm -f test_vecode.x rembo_vecode.x $(objdir)/*.o $(objdir)/*.mod
 
